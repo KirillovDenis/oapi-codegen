@@ -663,6 +663,12 @@ func GenerateChiServer(t *template.Template, operations []OperationDefinition) (
 	return GenerateTemplates([]string{"chi/chi-interface.tmpl", "chi/chi-middleware.tmpl", "chi/chi-handler.tmpl"}, t, operations)
 }
 
+// GenerateFastHTTPServer This function generates all the go code for the ServerInterface as well as
+// all the wrapper functions around our handlers.
+func GenerateFastHTTPServer(t *template.Template, operations []OperationDefinition) (string, error) {
+	return GenerateTemplates([]string{"fasthttp/fasthttp-interface.tmpl", "fasthttp/fasthttp-middleware.tmpl", "fasthttp/fasthttp-handler.tmpl"}, t, operations)
+}
+
 // GenerateEchoServer This function generates all the go code for the ServerInterface as well as
 // all the wrapper functions around our handlers.
 func GenerateEchoServer(t *template.Template, operations []OperationDefinition) (string, error) {

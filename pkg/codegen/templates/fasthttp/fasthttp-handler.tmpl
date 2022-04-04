@@ -1,0 +1,52 @@
+// Handler creates fasthttp.RequestHandler with routing matching OpenAPI spec.
+func Handler(si ServerInterface) fasthttp.RequestHandler {
+  return HandlerWithOptions(si, FastHTTPServerOptions{})
+}
+
+type FastHTTPServerOptions struct {
+    BaseURL string
+    BaseRouter *router.Router
+    Middlewares []MiddlewareFunc
+    ErrorHandlerFunc   func(c *fasthttp.RequestCtx, err error)
+}
+
+// HandlerFromMux creates fasthttp.RequestHandler with routing matching OpenAPI spec based on the provided mux.
+func HandlerFromMux(si ServerInterface, r *router.Router) fasthttp.RequestHandler {
+    return HandlerWithOptions(si, FastHTTPServerOptions {
+        BaseRouter: r,
+    })
+}
+
+func HandlerFromMuxWithBaseURL(si ServerInterface, r *router.Router, baseURL string) fasthttp.RequestHandler {
+    return HandlerWithOptions(si, FastHTTPServerOptions {
+        BaseURL: baseURL,
+        BaseRouter: r,
+    })
+}
+
+// HandlerWithOptions creates fasthttp.RequestHandler with additional options
+func HandlerWithOptions(si ServerInterface, options FastHTTPServerOptions) fasthttp.RequestHandler {
+r := options.BaseRouter
+
+if r == nil {
+r = router.New()
+}
+if options.ErrorHandlerFunc == nil {
+    options.ErrorHandlerFunc = func(c *fasthttp.RequestCtx, err error) {
+        c.Error(err.Error(), http.StatusBadRequest)
+    }
+}
+{{if .}}wrapper := ServerInterfaceWrapper{
+Handler: si,
+HandlerMiddlewares: options.Middlewares,
+ErrorHandlerFunc: options.ErrorHandlerFunc,
+}
+{{end}}
+
+gr :=r.Group(options.BaseURL)
+{{range .}}
+gr.{{.Method  | title }}("{{.Path | swaggerUriToChiUri}}", wrapper.{{.OperationId}})
+{{end}}
+
+return r.Handler
+}

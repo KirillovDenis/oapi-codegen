@@ -112,6 +112,8 @@ func main() {
 			opts.GenerateClient = true
 		case "chi-server":
 			opts.GenerateChiServer = true
+		case "fasthttp-server":
+			opts.GenerateFastHTTPServer = true
 		case "server":
 			opts.GenerateEchoServer = true
 		case "gin":
@@ -135,8 +137,10 @@ func main() {
 	opts.ExcludeTags = cfg.ExcludeTags
 	opts.ExcludeSchemas = cfg.ExcludeSchemas
 
-	if opts.GenerateEchoServer && opts.GenerateChiServer {
-		errExit("can not specify both server and chi-server targets simultaneously")
+	if opts.GenerateEchoServer && opts.GenerateChiServer ||
+		opts.GenerateEchoServer && opts.GenerateFastHTTPServer ||
+		opts.GenerateChiServer && opts.GenerateFastHTTPServer {
+		errExit("can not specify more than one server simultaneously")
 	}
 
 	swagger, err := util.LoadSwagger(flag.Arg(0))
